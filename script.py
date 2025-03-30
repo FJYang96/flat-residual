@@ -54,7 +54,7 @@ closed_loop_sim_params = {
     'ellipse_axes': [1, 1],
     'lemniscate_axes': [1, 0.6],
     'ref_ang_vel': np.pi / 7,
-    'obs_noise_std': 1e-3,
+    'obs_noise_std': 1e-2,
     'u_noise_std': torch.tensor([1e-2, 1e-3]),
     'controller_gain': np.array([0.99, 0.978, 0.98, 0.991]),
     'observer_gain': np.array([0.45, 0.55, 0.4, 0.5])
@@ -63,41 +63,41 @@ closed_loop_sim_params = {
 num_experiments = 30
 if __name__ == '__main__':
 
-    # Train models
-    for seed in range(num_experiments):
-        exp_utils.train_models(seed, quad_params, data_params, training_params)
+    # # Train models
+    # for seed in range(num_experiments):
+    #     exp_utils.train_models(seed, quad_params, data_params, training_params)
 
-    ########################
-    # Open-loop evaluation #
-    ########################
-    print('-'*10, 'Open-loop evaluation', '-'*10)
+    # ########################
+    # # Open-loop evaluation #
+    # ########################
+    # print('-'*10, 'Open-loop evaluation', '-'*10)
 
-    # On nominal flat maps
-    exp_utils.eval_open_loop('nominal', None, quad_params, open_loop_sim_params)
+    # # On nominal flat maps
+    # exp_utils.eval_open_loop('nominal', None, quad_params, open_loop_sim_params)
 
-    # On true flat maps
-    class TrueResidualWrapper(nn.Module):
-        def __init__(self, quad_params):
-            super().__init__()
-            self.true_dynamics = PlanarQuadDynamicsWithDrag(**quad_params)
+    # # On true flat maps
+    # class TrueResidualWrapper(nn.Module):
+    #     def __init__(self, quad_params):
+    #         super().__init__()
+    #         self.true_dynamics = PlanarQuadDynamicsWithDrag(**quad_params)
 
-        def forward(self, x):
-            res = torch.cat((torch.zeros_like(x), torch.zeros_like(x[..., :2])), dim=-1)
-            res[..., 2:4] += self.true_dynamics.drag(
-                torch.cat((x, torch.zeros_like(x[..., :2])), dim=-1)
-            )
-            return res
-    exp_utils.eval_open_loop(
-        'true', TrueResidualWrapper(quad_params), quad_params, open_loop_sim_params
-    )
+    #     def forward(self, x):
+    #         res = torch.cat((torch.zeros_like(x), torch.zeros_like(x[..., :2])), dim=-1)
+    #         res[..., 2:4] += self.true_dynamics.drag(
+    #             torch.cat((x, torch.zeros_like(x[..., :2])), dim=-1)
+    #         )
+    #         return res
+    # exp_utils.eval_open_loop(
+    #     'true', TrueResidualWrapper(quad_params), quad_params, open_loop_sim_params
+    # )
 
-    # On learned residual models
-    for seed in range(num_experiments):
-        model_path = f'models/residual_model_{seed}.pth'
-        residual_model = exp_utils.load_model(model_path, training_params)
-        exp_utils.eval_open_loop(
-            f'learned_{seed}', residual_model, quad_params, open_loop_sim_params
-        )
+    # # On learned residual models
+    # for seed in range(num_experiments):
+    #     model_path = f'models/residual_model_{seed}.pth'
+    #     residual_model = exp_utils.load_model(model_path, training_params)
+    #     exp_utils.eval_open_loop(
+    #         f'learned_{seed}', residual_model, quad_params, open_loop_sim_params
+    #     )
 
     # Closed-loop evaluation
     print('-'*10, 'Closed-loop evaluation', '-'*10)

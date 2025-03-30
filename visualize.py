@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def draw_circle(x, y, r, color="k", alpha=1.0):
+def draw_circle(x, y, r, color="k", alpha=1.0, linewidth=1):
     """ Draw a circle with center (x, y) and radius r """
     theta = np.linspace(0, 2 * np.pi, 100)
-    plt.plot(x + r * np.cos(theta), y + r * np.sin(theta), color, alpha=alpha)
+    plt.plot(x + r * np.cos(theta), y + r * np.sin(theta), color, alpha=alpha, linewidth=linewidth)
 
 
-def draw_quadrotor(x, color="k", alpha=1.0, exaggerate_theta=3):
+def draw_quadrotor(x, color="k", alpha=1.0, exaggerate_theta=3, thickness=2):
     """ Draw a quadrotor with state x = (x, y, v_x, v_y, theta, omega) """
     x, y, v_x, v_y, theta, omega = x
     theta = theta * exaggerate_theta
@@ -20,6 +20,7 @@ def draw_quadrotor(x, color="k", alpha=1.0, exaggerate_theta=3):
         [y - length * np.sin(theta), y + length * np.sin(theta)],
         color=color,
         alpha=alpha,
+        linewidth=thickness,
     )
     # Draw the propellers
     for sgn in [-1, 1]:
@@ -29,14 +30,17 @@ def draw_quadrotor(x, color="k", alpha=1.0, exaggerate_theta=3):
             radius,
             color=color,
             alpha=alpha,
+            linewidth=thickness,
         )
 
 
-def visualize_xtraj(xtraj, interval=10):
+def visualize_xtraj(xtraj, interval=10, xlim=None, ylim=None):
     plt.figure()
-    # plt.axis("equal")
-    plt.xlim([-0.5, 1.5])
-    plt.ylim([0, 3.5])
+    plt.axis("equal")
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
+        plt.ylim(ylim)
     for t in range(0, xtraj.shape[0], interval):
         draw_quadrotor(xtraj[t], alpha=(t / xtraj.shape[0]))
     plt.show()
@@ -62,7 +66,7 @@ def make_gif_from_xtraj(xtraj, filename):
         images.append(imageio.imread("temp.png"))
 
     plt.close(fig)
-    imageio.mimsave(filename, images, fps=10)
+    imageio.mimsave(filename, images, fps=10, loop=0)
 
 
 def make_mp4_from_xtraj(xtraj, filename):
