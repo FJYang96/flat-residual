@@ -54,10 +54,10 @@ closed_loop_sim_params = {
     'ellipse_axes': [1, 1],
     'lemniscate_axes': [1, 0.6],
     'ref_ang_vel': np.pi / 7,
-    'obs_noise_std': 1e-2,
+    'controller_poles': np.array([0.99, 0.978, 0.98, 0.991]),
+    'observer_poles': np.array([0.45, 0.55, 0.4, 0.5]),
+    'obs_noise_std': 1e-3,
     'u_noise_std': torch.tensor([1e-2, 1e-3]),
-    'controller_gain': np.array([0.99, 0.978, 0.98, 0.991]),
-    'observer_gain': np.array([0.45, 0.55, 0.4, 0.5])
 }
 
 num_experiments = 30

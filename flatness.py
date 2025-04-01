@@ -96,9 +96,6 @@ class FlatnessController:
     def z2x_model(self, z, v):
         if self.model is not None:
             out, out_dot, out_ddot = self.compute_perturbations(z, v)
-            # print(out)
-            # print(out_dot)
-            # print(out_ddot)
             zpert = np.hstack([
                 np.zeros_like(z[:, :4]),
                 out[:, 2:4],
@@ -185,10 +182,9 @@ class FlatnessController:
         return z
 
     def adjust_for_saturation(self, z, v, u_bar):
-        # !!!!!! TODO: make sure that this works when model is present !!!!!!!
+        raise NotImplementedError("This method is defunct")
         if self.model is not None:
             out, out_dot, out_ddot, out_dddot = self.compute_perturbations(z, v)
-            out, out_dot, out_ddot, _ = self.compute_perturbations(z, v)
             zpert = np.hstack([
                 np.zeros_like(z[:, :2]),
                 out[:, :2],

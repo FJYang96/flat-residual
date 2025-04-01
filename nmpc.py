@@ -108,6 +108,9 @@ class PlanarQuadrotorMPC:
         # **Define the cost function**
         self.cost = 0
         for k in range(self.horizon):
+            # Note: this cost is slightly different from the one in the paper (as it also penalizes velocity error
+            # instead of just position error). Just penalizing position error leads to an unstable controller in
+            # the case where there is observation and control noise.
             self.cost += cs.sumsqr(self.x[:4, k] - self.current_ref[:4, k]) + 1e-3 * cs.sumsqr(self.u[:, k])
             self.opti.subject_to(self.x[:, k + 1] == self.dynamics(self.x[:, k], self.u[:, k]))
 
@@ -155,10 +158,12 @@ class PlanarQuadrotorMPC:
         self.dynamics = cs.Function("Dynamics", [x, u], [result["xf"]])
         return 1
 
-    def control(self, state):
+    def control(self, state, return_full=False):
         # Find the reference traj for this step; extend the reference if needed
         reference = self.reference[:, self.t: self.t + self.horizon + 1]
         if reference.shape[1] < self.horizon + 1:
+            if reference.shape[1] == 0:
+                return np.zeros(2)
             reference = np.hstack(
                 [reference, np.tile(reference[:, -1:], (1, self.horizon + 1 - reference.shape[1]))]
             )
@@ -179,7 +184,10 @@ class PlanarQuadrotorMPC:
         self.prev_lam_g = sol.value(self.opti.lam_g)
         self.t += 1
 
-        return sol.value(self.u[:, 0])
+        if return_full:
+            return sol.value(self.u)
+        else:
+            return sol.value(self.u[:, 0])
 
     def control_recompile(self, state):
         """

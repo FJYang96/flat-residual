@@ -114,7 +114,7 @@ def simulate_openloop(dynamics, dt, num_steps, x0, us, obs_noise_std=0.0, u_nois
     return xtrajectories, utrajectories
 
 
-def simulate_closedloop(dynamics, num_samples, dt, Tf, x0, controller, obs_noise_std=0.0, u_noise_std=0.0, seed=None, measure_time=False):
+def simulate_closedloop(dynamics, num_samples, dt, Tf, x0, controller, obs_noise_std=0.0, u_noise_std=0.0, seed=None, sampling_period=1, measure_time=False):
     assert num_samples == 1, "Closed-loop simulation only supports num_samples=1"
     controller.reset()
     if seed is not None:
@@ -126,13 +126,17 @@ def simulate_closedloop(dynamics, num_samples, dt, Tf, x0, controller, obs_noise
     if measure_time:
         ts = []
     for t in range(num_steps):
+        # Gather observation
         obs = xtrajectories[0, t, :].clone()
         obs += torch.randn_like(obs) * obs_noise_std
-        if measure_time:
-            start = time.time()
-        u = torch.tensor(controller.control(obs.numpy())).unsqueeze(0)
-        if measure_time:
-            ts.append(time.time() - start)
+        # Update the control action
+        if t % sampling_period == 0:
+            if measure_time:
+                start = time.time()
+            u = torch.tensor(controller.control(obs.numpy())).unsqueeze(0)
+            if measure_time:
+                ts.append(time.time() - start)
+        # Step dynamics
         u_noisy = u + torch.randn_like(u) * u_noise_std
         xtrajectories[:, t + 1, :], u_sat = rk4_step(dynamics, xtrajectories[:, t, :], u_noisy, dt)
         utrajectories[:, t, :] = u_sat

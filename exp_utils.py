@@ -141,10 +141,10 @@ def eval_closed_loop(seed, model_path, quad_params, training_params, sim_params)
         A_single, B_single, C_single = AB[:4, :4], AB[:4, 4:], np.eye(4)[:3]  # Single channel integrator
         # A_single, B_single, C_single = AB[:4, :4], AB[:4, 4:], np.eye(4)[:2]  # Single channel integrator
         linear_controller = linear_util.LinearController(
-            A_single, B_single, sim_params['controller_gain']
+            A_single, B_single, sim_params['controller_poles']
         )
         linear_observer = linear_util.LuenbergerObserver(
-            A_single, B_single, C_single, sim_params['observer_gain'], x0_hat=ref[0, :8].numpy()
+            A_single, B_single, C_single, sim_params['observer_poles'], x0_hat=ref[0, :8].numpy()
         )
 
         learned_ctrl = flatness.FlatnessController(
