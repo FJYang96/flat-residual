@@ -3,7 +3,6 @@ This repository contains the code needed to reproduce the examples found in
 
 F.Yang, J.Welde and N.Matni, "Learning Flatness-Preserving Residuals for Pure-Feedback Systems"
 
-## Organization
 To run the experiments, install the relevant packages in `requirement.txt` and run the following command in the terminal
 ```bash
 python3 script.py
